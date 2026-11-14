@@ -1,6 +1,6 @@
 /* سبورة الرياضيات — عامل الخدمة (يشغّل الموقع بدون نت)
    عند كل تحديث للسبورة: غيّر رقم VERSION حتى يستلم الجميع النسخة الجديدة */
-const VERSION = 'v1.0.2';
+const VERSION = 'v1.0.3';
 const CACHE = 'sabora-' + VERSION;
 const FONTS = 'sabora-fonts';
 const CORE = ['./', './index.html', './manifest.webmanifest',
@@ -8,7 +8,8 @@ const CORE = ['./', './index.html', './manifest.webmanifest',
   './icons/apple-touch-icon.png', './icons/favicon.png'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)));
+  self.skipWaiting();
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE.map(u => new Request(u, {cache: 'reload'})))));
 });
 
 self.addEventListener('activate', e => {
@@ -38,13 +39,30 @@ self.addEventListener('fetch', e => {
   }
   if (url.origin !== location.origin || url.searchParams.has('callback')) return;
 
-  // ملفات الموقع: من الذاكرة فوراً (يشتغل بدون نت)
+  // الصفحة: من النت أولاً (حتى تطلع آخر نسخة)، وإذا ماكو نت أو تأخر أكثر من 4 ثواني فمن الذاكرة
+  const isPage = req.mode === 'navigate' || url.pathname.endsWith('/') || url.pathname.endsWith('index.html');
+  if (isPage) {
+    e.respondWith((async () => {
+      const c = await caches.open(CACHE);
+      const net = fetch(req, {cache: 'no-store'}).then(res => {
+        if (res.ok) c.put('./index.html', res.clone());
+        return res;
+      });
+      const cached = await c.match('./index.html');
+      if (!cached) return net.catch(() => new Response('غير متصل', {status: 503}));
+      e.waitUntil(net.catch(() => {}));
+      const timeout = new Promise(r => setTimeout(() => r(cached), 4000));
+      return Promise.race([net.catch(() => cached), timeout]);
+    })());
+    return;
+  }
+
+  // باقي الملفات (الأيقونات...): من الذاكرة، وإذا ما موجودة فمن النت
   e.respondWith((async () => {
     const c = await caches.open(CACHE);
-    const hit = await c.match(req, {ignoreSearch: true}) ||
-                (req.mode === 'navigate' ? await c.match('./index.html') : null);
+    const hit = await c.match(req, {ignoreSearch: true});
     if (hit) return hit;
     try { const res = await fetch(req); if (res.ok) c.put(req, res.clone()); return res; }
-    catch (_) { return (await c.match('./index.html')) || new Response('غير متصل', {status: 503}); }
+    catch (_) { return new Response('', {status: 504}); }
   })());
 });
