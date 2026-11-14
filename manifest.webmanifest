@@ -1,0 +1,20 @@
+{
+  "name": "سبورة الرياضيات",
+  "short_name": "سبورة الرياضيات",
+  "description": "سبورة رياضيات تفاعلية للمدرسين — أسئلة المنهج العراقي والوزاريات، تعمل بدون إنترنت",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "any",
+  "background_color": "#1f6f54",
+  "theme_color": "#1f6f54",
+  "categories": ["education"],
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
