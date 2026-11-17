@@ -1,6 +1,6 @@
 /* سبورة الرياضيات — عامل الخدمة (يشغّل الموقع بدون نت)
    عند كل تحديث للسبورة: غيّر رقم VERSION حتى يستلم الجميع النسخة الجديدة */
-const VERSION = 'v1.9.3';
+const VERSION = 'v1.9.4';
 const CACHE = 'sabora-' + VERSION;
 const FONTS = 'sabora-fonts';
 const CORE = ['./', './index.html', './manifest.webmanifest',
